@@ -27,7 +27,6 @@ function! s:VifmMagic(dirname)
         endfor
     elseif isdirectory(a:dirname)
         let g:vifmed = tempname()
-        bdelete!
         exec 'terminal vifm --choose-files ' . shellescape(g:vifmed) . ' ' . shellescape(a:dirname)
     endif
 endfunction
