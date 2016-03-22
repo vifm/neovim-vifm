@@ -3,33 +3,117 @@
 " https://github.com/Mizuchi/vim-ranger/blob/master/plugin/ranger.vim
 " https://github.com/airodactyl/neovim-ranger
 
-function! s:VifmMagic(dirname)
-    if exists('g:vifmed')
-        let vifmed = g:vifmed
-        unlet g:vifmed
+function! s:VifmCall(dirname, callbacks, mode)
+    let tempfile = tempname()
+    call termopen(['vifm',
+                \ '--choose-files', tempfile,
+                \ a:dirname], extend({
+                \ 'tempfile': tempfile,
+                \ 'mode': a:mode
+                \ }, a:callbacks))
+    startinsert
+endfunction
 
-        if !filereadable(vifmed)
-            return
+function! Vifm(dirname)
+    if a:dirname != '' && isdirectory(a:dirname)
+        let winnum = s:VifmWinNum()
+        if winnum == 0
+            topleft 40vnew
+            let callbacks = { 'on_exit': function('s:VifmExitCallback') }
+            call s:VifmCall(a:dirname, callbacks, 'split')
+        else
+            exe winnum . 'wincmd w'
+            startinsert
         endif
-
-        let names = readfile(vifmed)
-
-        if empty(names)
-            return
-        endif
-
-        exec 'edit ' . fnameescape(names[0])
-        filetype detect
-
-        for name in names[1:]
-            exec 'tabe ' . fnameescape(name)
-            filetype detect
-        endfor
-    elseif isdirectory(a:dirname)
-        let g:vifmed = tempname()
-        exec 'terminal vifm --choose-files ' . shellescape(g:vifmed) . ' ' . shellescape(a:dirname)
     endif
 endfunction
 
-au BufEnter * silent call s:VifmMagic(expand("<amatch>")) 
+function! VifmNoSplit(dirname)
+    if a:dirname != '' && isdirectory(a:dirname)
+        if !s:VifmInThisBuf()
+            let callbacks = { 'on_exit': function('s:VifmExitCallback') }
+            call s:VifmCall(a:dirname, callbacks, 'auto')
+        endif
+    endif
+endfunction
+
+function! s:VifmBufferCheck(bufnum)
+    let bufstr = bufname(a:bufnum)
+    return matchstr(bufstr, '^term:\/\/.*:vifm$') != ''
+endfunction
+
+function! s:VifmExitCallback(job_id, data, event)
+    if !filereadable(self.tempfile)
+        return
+    endif
+    let names = readfile(self.tempfile)
+    if empty(names)
+        return
+    endif
+    call VifmClose(self.mode)
+    exec 'edit ' . fnameescape(names[0])
+    for name in names[1:]
+        exec 'tabedit ' . fnameescape(name)
+        filetype detect
+    endfor
+endfunction
+
+function! s:VifmBufNum()
+    let bufnums = tabpagebuflist()
+    for bufnum in bufnums
+        if s:VifmBufferCheck(bufnum)
+            return bufnum
+        endif
+    endfor
+    return -1
+endfunction
+
+function! s:VifmWinNum()
+    let bufnum = s:VifmBufNum()
+    if bufnum == -1
+        return 0
+    else
+        return bufwinnr(bufnum)
+    endif
+endfunction
+
+function! s:VifmInThisBuf()
+    return s:VifmBufferCheck(bufnr('%'))
+endfunction
+
+function! VifmClose(...)
+    if a:0 > 0
+        let mode = a:1
+    else
+        let mode = 'split'
+    endif
+    if s:VifmInThisBuf()
+        if mode == 'split'
+            bdelete!
+        else
+            let bufnum = bufnr('%')
+            bprev
+            exe 'silent! bdelete! ' . bufnum
+        endif
+        return
+    else
+        let bufnum = s:VifmBufNum()
+        if bufnum == -1
+            return
+        else
+            exe 'bdelete! ' . bufnum
+        endif
+    endif
+endfunction
+
+function! s:VifmAuto(dirname)
+    if a:dirname != '' && isdirectory(a:dirname)
+        " bdelete!
+        call VifmNoSplit(a:dirname)
+    endif
+endfunction
+
 let g:loaded_netrwPlugin = 'disable'
+au BufEnter * silent call s:VifmAuto(expand('<amatch>'))
+
+command! -complete=file -nargs=1 Vifm call Vifm(<f-args>)
