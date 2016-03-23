@@ -3,24 +3,36 @@
 " https://github.com/Mizuchi/vim-ranger/blob/master/plugin/ranger.vim
 " https://github.com/airodactyl/neovim-ranger
 
-function! s:VifmCall(dirname, callbacks, mode)
+function! s:VifmCall(dirname, callbacks, mode, prev)
     let tempfile = tempname()
     call termopen(['vifm',
                 \ '--choose-files', tempfile,
                 \ a:dirname], extend({
                 \ 'tempfile': tempfile,
-                \ 'mode': a:mode
+                \ 'mode': a:mode,
+                \ 'prev': a:prev,
                 \ }, a:callbacks))
     startinsert
+endfunction
+
+function! s:VifmCallWithMode(dirname, callbacks, mode)
+    if a:mode == 'split'
+        let prev = winnr()
+    else
+        let prev = bufnr('%')
+    endif
+    if a:mode == 'split'
+        topleft 40vnew
+    endif
+    call s:VifmCall(a:dirname, a:callbacks, a:mode, prev)
 endfunction
 
 function! Vifm(dirname)
     if a:dirname != '' && isdirectory(a:dirname)
         let winnum = s:VifmWinNum()
         if winnum == 0
-            topleft 40vnew
             let callbacks = { 'on_exit': function('s:VifmExitCallback') }
-            call s:VifmCall(a:dirname, callbacks, 'split')
+            call s:VifmCallWithMode(a:dirname, callbacks, 'split')
         else
             exe winnum . 'wincmd w'
             startinsert
@@ -32,7 +44,7 @@ function! VifmNoSplit(dirname)
     if a:dirname != '' && isdirectory(a:dirname)
         if !s:VifmInThisBuf()
             let callbacks = { 'on_exit': function('s:VifmExitCallback') }
-            call s:VifmCall(a:dirname, callbacks, 'auto')
+            call s:VifmCallWithMode(a:dirname, callbacks, 'auto')
         endif
     endif
 endfunction
@@ -50,7 +62,11 @@ function! s:VifmExitCallback(job_id, data, event)
     if empty(names)
         return
     endif
-    call VifmClose(self.mode)
+    if self.mode == 'split'
+        call VifmClose(self.mode, self.prev)
+    else
+        call VifmClose(self.mode, self.prev)
+    endif
     exec 'edit ' . fnameescape(names[0])
     for name in names[1:]
         exec 'tabedit ' . fnameescape(name)
@@ -81,18 +97,37 @@ function! s:VifmInThisBuf()
     return s:VifmBufferCheck(bufnr('%'))
 endfunction
 
+function! s:VifmJumpBack(mode, prev)
+    if a:prev == -1
+        return 0
+    endif
+    if a:mode == 'split'
+        silent! exe a:prev . 'wincmd w'
+    else
+        silent! buffer a:prev
+    endif
+    return 1
+endfunction
+
 function! VifmClose(...)
     if a:0 > 0
         let mode = a:1
     else
         let mode = 'split'
     endif
+    if a:0 > 1
+        let prev = a:2
+    else
+        let prev = -1
+    endif
     if s:VifmInThisBuf()
         if mode == 'split'
             bdelete!
+            call s:VifmJumpBack(mode, prev)
         else
             let bufnum = bufnr('%')
             bprev
+            call s:VifmJumpBack(mode, prev)
             exe 'silent! bdelete! ' . bufnum
         endif
         return
