@@ -148,7 +148,7 @@ function! s:VifmAuto(dirname)
     endif
 endfunction
 
-if exists('g:vifmSplitWidth') && !(type (g:vifmSplitWidth) != 0)
+if exists('g:vifmSplitWidth') && type (g:vifmSplitWidth) != 0
     echoerr 'neovim-vifm: g:vifmSplitWidth must be an integer.'
 endif
 if !exists('g:vifmSplitWidth')
