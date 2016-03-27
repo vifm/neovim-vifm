@@ -22,7 +22,7 @@ function! s:VifmCallWithMode(dirname, callbacks, mode)
         let prev = bufnr('%')
     endif
     if a:mode == 'split'
-        topleft 40vnew
+        exe 'topleft ' . g:vifmSplitWidth . 'vnew'
     endif
     call s:VifmCall(a:dirname, a:callbacks, a:mode, prev)
 endfunction
@@ -147,6 +147,13 @@ function! s:VifmAuto(dirname)
         call VifmNoSplit(a:dirname)
     endif
 endfunction
+
+if exists('g:vifmSplitWidth') && !(type (g:vifmSplitWidth) != 0)
+    echoerr 'neovim-vifm: g:vifmSplitWidth must be an integer.'
+endif
+if !exists('g:vifmSplitWidth')
+    let g:vifmSplitWidth = 40
+endif
 
 let g:loaded_netrwPlugin = 'disable'
 au BufEnter * silent call s:VifmAuto(expand('<amatch>'))

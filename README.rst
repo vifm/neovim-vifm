@@ -40,6 +40,11 @@ To exit vifm without opening anything, enter ``:q`` or ``ZZ``.
 vifm has many, many other features, which you can read about in .vifm/vifm-help.txt
 The power of properly learning and configuring vifm, just as you would vim, cannot be overstated.
 
+Configuration
+-------------
+
+Set the variable `g:vifmSplitWidth` to configure the width of the vifm side-menu.
+
 Notes
 -----
 
