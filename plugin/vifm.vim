@@ -3,19 +3,37 @@
 " https://github.com/Mizuchi/vim-ranger/blob/master/plugin/ranger.vim
 " https://github.com/airodactyl/neovim-ranger
 
-function! s:VifmCall(dirname, callbacks, mode, prev)
-    let tempfile = tempname()
-    call termopen(['vifm',
-                \ '--choose-files', tempfile,
-                \ a:dirname], extend({
-                \ 'tempfile': tempfile,
+function! s:VifmCwdCall(dirfile)
+    let command = ['bash', '-c', 'while true; do cat ' . shellescape(a:dirfile) . '; done']
+    let argdict = {}
+    let callbacks = { 'on_stdout': function('s:VifmCwdStdoutCallback') }
+    let job = jobstart(command, extend(argdict, callbacks))
+    return job
+endfunction
+
+function! s:VifmCall(dirname, mode, prev)
+    let listfile = tempname()
+    let command = ['vifm', '--choose-files', listfile, a:dirname]
+    let argdict = {
+                \ 'listfile': listfile,
                 \ 'mode': a:mode,
                 \ 'prev': a:prev,
-                \ }, a:callbacks))
+                \ }
+    let callbacks = { 'on_exit': function('s:VifmExitCallback') }
+    if exists('g:vifmLiveCwd') && g:vifmLiveCwd == 1
+        let dirfile = tempname()
+        silent exec '!mkfifo ' . dirfile
+        let cwd_job = s:VifmCwdCall(dirfile)
+        let argdict.dirfile = dirfile
+        let argdict.cwd_job = cwd_job
+        call add(command, '-c')
+        call add(command, 'autocmd DirEnter * !echo %d >> ' . dirfile)
+    endif
+    call termopen(command, extend(argdict, callbacks))
     startinsert
 endfunction
 
-function! s:VifmCallWithMode(dirname, callbacks, mode)
+function! s:VifmCallWithMode(dirname, mode)
     if a:mode == 'split'
         let prev = winnr()
     else
@@ -24,15 +42,14 @@ function! s:VifmCallWithMode(dirname, callbacks, mode)
     if a:mode == 'split'
         exe 'topleft ' . g:vifmSplitWidth . 'vnew'
     endif
-    call s:VifmCall(a:dirname, a:callbacks, a:mode, prev)
+    call s:VifmCall(a:dirname, a:mode, prev)
 endfunction
 
 function! Vifm(dirname)
     if a:dirname != '' && isdirectory(a:dirname)
         let winnum = s:VifmWinNum()
         if winnum == 0
-            let callbacks = { 'on_exit': function('s:VifmExitCallback') }
-            call s:VifmCallWithMode(a:dirname, callbacks, 'split')
+            call s:VifmCallWithMode(a:dirname, 'split')
         else
             exe winnum . 'wincmd w'
             startinsert
@@ -43,8 +60,7 @@ endfunction
 function! VifmNoSplit(dirname)
     if a:dirname != '' && isdirectory(a:dirname)
         if !s:VifmInThisBuf()
-            let callbacks = { 'on_exit': function('s:VifmExitCallback') }
-            call s:VifmCallWithMode(a:dirname, callbacks, 'auto')
+            call s:VifmCallWithMode(a:dirname, 'auto')
         endif
     endif
 endfunction
@@ -54,11 +70,18 @@ function! s:VifmBufferCheck(bufnum)
     return matchstr(bufstr, '^term:\/\/.*:vifm$') != ''
 endfunction
 
+function! s:VifmCwdStdoutCallback(job_id, data, event)
+    exec 'cd ' . fnameescape(a:data[0])
+endfunction
+
 function! s:VifmExitCallback(job_id, data, event)
-    if !filereadable(self.tempfile)
+    if exists('self.cwd_job')
+        call jobstop(self.cwd_job)
+    endif
+    if !filereadable(self.listfile)
         return
     endif
-    let names = readfile(self.tempfile)
+    let names = readfile(self.listfile)
     if empty(names)
         return
     endif
