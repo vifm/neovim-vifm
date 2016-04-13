@@ -47,6 +47,8 @@ Set the variable `g:vifmSplitWidth` to configure the width of the vifm side-menu
 
 Set the variable `g:vifmLiveCwd` to 1 to allow vifm to alter the active directory as it navigates.
 
+Set the variable `g:vifmUseCurrent` to change vifm to the active directory on startup.
+
 Notes
 -----
 

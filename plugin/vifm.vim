@@ -13,7 +13,10 @@ endfunction
 
 function! s:VifmCall(dirname, mode, prev)
     let listfile = tempname()
-    let command = ['vifm', '--choose-files', listfile, a:dirname]
+    let command = ['vifm', '--choose-files', listfile ]
+    if g:vifmUseCurrent
+        let command = command + [a:dirname]
+    endif
     let argdict = {
                 \ 'listfile': listfile,
                 \ 'mode': a:mode,
@@ -173,9 +176,13 @@ endfunction
 
 if exists('g:vifmSplitWidth') && type (g:vifmSplitWidth) != 0
     echoerr 'neovim-vifm: g:vifmSplitWidth must be an integer.'
-endif
-if !exists('g:vifmSplitWidth')
+elseif !exists('g:vifmSplitWidth')
     let g:vifmSplitWidth = 40
+endif
+if exists('g:vifmUseCurrent') && type (g:vifmSplitWidth) != 0
+    echoerr 'neovim-vifm: g:vifmUseCurrent must be an integer.'
+elseif !exists('g:vifmUseCurrent')
+    let g:vifmUseCurrent = 1
 endif
 
 let g:loaded_netrwPlugin = 'disable'
