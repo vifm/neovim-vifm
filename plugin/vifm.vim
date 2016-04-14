@@ -1,4 +1,4 @@
-" forked from 
+" forked from
 " https://github.com/hut/ranger/blob/master/examples/vim_file_chooser.vim
 " https://github.com/Mizuchi/vim-ranger/blob/master/plugin/ranger.vim
 " https://github.com/airodactyl/neovim-ranger
@@ -30,7 +30,9 @@ function! s:VifmCall(dirname, mode, prev)
         let argdict.dirfile = dirfile
         let argdict.cwd_job = cwd_job
         call add(command, '-c')
-        call add(command, 'autocmd DirEnter * !echo %d >> ' . dirfile)
+        call add(command, 'autocmd DirEnter * !pwd >> ' . dirfile)
+        call add(command, '--choose-dir')
+        call add(command, dirfile)
     endif
     call termopen(command, extend(argdict, callbacks))
     startinsert
