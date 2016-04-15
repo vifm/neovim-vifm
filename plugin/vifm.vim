@@ -3,6 +3,29 @@
 " https://github.com/Mizuchi/vim-ranger/blob/master/plugin/ranger.vim
 " https://github.com/airodactyl/neovim-ranger
 
+function! s:vifmGetVar(var, type, default)
+    if exists(a:var)
+        if  eval('type (' . a:var . ')') != a:type
+            echoerr 'neovim-vifm: ' . a:var . ' must be type ' . string(a:type)
+        else
+            return eval(a:var)
+        endif
+    endif
+    return a:default
+endfunction
+
+function! s:vifmGetSplitWidth()
+    return s:vifmGetVar('g:vifmSplitWidth', 0, 40)
+endfunction
+
+function! s:vifmGetUseCurrent()
+    return s:vifmGetVar('g:vifmUseCurrent', 0, 1)
+endfunction
+
+function! s:vifmGetLiveCwd()
+    return s:vifmGetVar('g:vifmLiveCwd', 0, 0)
+endfunction
+
 function! s:VifmCwdCall(dirfile)
     let command = ['bash', '-c', 'while true; do cat ' . shellescape(a:dirfile) . '; done']
     let argdict = {}
@@ -14,7 +37,8 @@ endfunction
 function! s:VifmCall(dirname, mode, prev)
     let listfile = tempname()
     let command = ['vifm', '--choose-files', listfile ]
-    if g:vifmUseCurrent
+    let vifmUseCurrent = s:vifmGetUseCurrent()
+    if vifmUseCurrent
         let command = command + [a:dirname]
     endif
     let argdict = {
@@ -23,7 +47,8 @@ function! s:VifmCall(dirname, mode, prev)
                 \ 'prev': a:prev,
                 \ }
     let callbacks = { 'on_exit': function('s:VifmExitCallback') }
-    if exists('g:vifmLiveCwd') && g:vifmLiveCwd == 1
+    let vifmLiveCwd = s:vifmGetLiveCwd()
+    if vifmLiveCwd == 1
         let dirfile = tempname()
         silent exec '!mkfifo ' . dirfile
         let cwd_job = s:VifmCwdCall(dirfile)
@@ -44,8 +69,9 @@ function! s:VifmCallWithMode(dirname, mode)
     else
         let prev = bufnr('%')
     endif
+    let vifmSplitWidth = s:vifmGetSplitWidth()
     if a:mode == 'split'
-        exe 'topleft ' . g:vifmSplitWidth . 'vnew'
+        exe 'topleft ' . vifmSplitWidth . 'vnew'
     endif
     call s:VifmCall(a:dirname, a:mode, prev)
 endfunction
@@ -175,17 +201,6 @@ function! s:VifmAuto(dirname)
         call VifmNoSplit(a:dirname)
     endif
 endfunction
-
-if exists('g:vifmSplitWidth') && type (g:vifmSplitWidth) != 0
-    echoerr 'neovim-vifm: g:vifmSplitWidth must be an integer.'
-elseif !exists('g:vifmSplitWidth')
-    let g:vifmSplitWidth = 40
-endif
-if exists('g:vifmUseCurrent') && type (g:vifmSplitWidth) != 0
-    echoerr 'neovim-vifm: g:vifmUseCurrent must be an integer.'
-elseif !exists('g:vifmUseCurrent')
-    let g:vifmUseCurrent = 1
-endif
 
 let g:loaded_netrwPlugin = 'disable'
 au BufEnter * silent call s:VifmAuto(expand('<amatch>'))
