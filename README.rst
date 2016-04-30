@@ -49,6 +49,8 @@ Set the variable `g:vifmLiveCwd` to 1 to allow vifm to alter the active director
 
 Set the variable `g:vifmUseCurrent` to change vifm to the active directory on startup.
 
+Set the variable `g:vifmUseLcd` to use ``:lcd`` instead of ``:cd`` to change directory.
+
 Notes
 -----
 

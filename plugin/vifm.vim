@@ -26,6 +26,10 @@ function! s:vifmGetLiveCwd()
     return s:vifmGetVar('g:vifmLiveCwd', 0, 0)
 endfunction
 
+function! s:vifmGetUseLcd()
+    return s:vifmGetVar('g:vifmUseLcd', 0, 0)
+endfunction
+
 function! s:VifmCwdCall(dirfile)
     let command = ['bash', '-c', 'while true; do cat ' . shellescape(a:dirfile) . '; done']
     let argdict = {}
@@ -102,7 +106,11 @@ function! s:VifmBufferCheck(bufnum)
 endfunction
 
 function! s:VifmCwdStdoutCallback(job_id, data, event)
-    exec 'cd ' . fnameescape(a:data[0])
+    if s:vifmGetUseLcd()
+        exec 'lcd ' . fnameescape(a:data[0])
+    else
+        exec 'cd ' . fnameescape(a:data[0])
+    endif
 endfunction
 
 function! s:VifmExitCallback(job_id, data, event)
