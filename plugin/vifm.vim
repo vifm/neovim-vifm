@@ -30,6 +30,22 @@ function! s:vifmGetUseLcd()
     return s:vifmGetVar('g:vifmUseLcd', 0, 0)
 endfunction
 
+function! s:vifmGetFixWidth()
+    return s:vifmGetVar('g:vifmFixWidth', 0, 1)
+endfunction
+
+function! s:vifmGetBufList()
+    return s:vifmGetVar('g:vifmBufList', 0, 1)
+endfunction
+
+function! s:vifmGetAutoFocus()
+    return s:vifmGetVar('g:vifmAutoFocus', 0, 1)
+endfunction
+
+function! s:vifmGetStartInsert()
+    return s:vifmGetVar('g:vifmStartInsert', 0, 1)
+endfunction
+
 function! s:VifmCwdCall(dirfile)
     let command = ['bash', '-c', 'while true; do cat ' . shellescape(a:dirfile) . '; done']
     let argdict = {}
@@ -64,7 +80,20 @@ function! s:VifmCall(dirname, mode, prev)
         call add(command, dirfile)
     endif
     call termopen(command, extend(argdict, callbacks))
-    startinsert
+    if a:mode == 'split' && s:vifmGetFixWidth()
+        set wfw
+    endif
+    if s:vifmGetBufList()
+        set nobuflisted
+    endif
+    if s:vifmGetAutoFocus() || a:mode != 'split'
+        if s:vifmGetStartInsert()
+            startinsert
+        endif
+    else
+        " TODO: fix window switching
+        exe a:prev . 'wincmd w'
+    endif
 endfunction
 
 function! s:VifmCallWithMode(dirname, mode)
@@ -89,6 +118,14 @@ function! Vifm(dirname)
             exe winnum . 'wincmd w'
             startinsert
         endif
+    endif
+endfunction
+
+function! VifmToggle(dirname)
+    if s:VifmBufNum() != -1
+        call VifmClose()
+    else
+        call Vifm(a:dirname)
     endif
 endfunction
 
@@ -214,3 +251,4 @@ let g:loaded_netrwPlugin = 'disable'
 au BufEnter * silent call s:VifmAuto(expand('<amatch>'))
 
 command! -complete=file -nargs=1 Vifm call Vifm(<f-args>)
+command! -complete=file -nargs=1 VifmToggle call VifmToggle(<f-args>)

@@ -51,6 +51,10 @@ Set the variable `g:vifmUseCurrent` to change vifm to the active directory on st
 
 Set the variable `g:vifmUseLcd` to use ``:lcd`` instead of ``:cd`` to change directory.
 
+Set the variable `g:vifmFixWidth` to disallow resizing of the window.
+
+Set the variable `g:vifmBufList` to not list the buffer.
+
 Notes
 -----
 
