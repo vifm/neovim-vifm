@@ -251,4 +251,5 @@ let g:loaded_netrwPlugin = 'disable'
 au BufEnter * silent call s:VifmAuto(expand('<amatch>'))
 
 command! -complete=file -nargs=1 Vifm call Vifm(<f-args>)
+command! -nargs=0 VifmClose call VifmClose()
 command! -complete=file -nargs=1 VifmToggle call VifmToggle(<f-args>)
