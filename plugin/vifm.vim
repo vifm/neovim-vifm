@@ -91,7 +91,6 @@ function! s:VifmCall(dirname, mode, prev)
             startinsert
         endif
     else
-        " TODO: fix window switching
         exe a:prev . 'wincmd w'
     endif
 endfunction
@@ -104,7 +103,7 @@ function! s:VifmCallWithMode(dirname, mode)
     endif
     let vifmSplitWidth = s:vifmGetSplitWidth()
     if a:mode == 'split'
-        exe 'topleft ' . vifmSplitWidth . 'vnew'
+        exe vifmSplitWidth . 'vnew'
     endif
     call s:VifmCall(a:dirname, a:mode, prev)
 endfunction
