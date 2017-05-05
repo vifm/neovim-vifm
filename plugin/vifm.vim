@@ -149,7 +149,7 @@ function! s:VifmCwdStdoutCallback(job_id, data, event)
     endif
 endfunction
 
-function! s:VifmExitCallback(job_id, data, event)
+function! s:VifmExitCallback(job_id, data, event) dict
     if exists('self.cwd_job')
         call jobstop(self.cwd_job)
     endif
