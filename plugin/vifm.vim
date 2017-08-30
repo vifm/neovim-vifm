@@ -224,7 +224,8 @@ function! VifmClose(...)
             call s:VifmJumpBack(mode, prev)
         else
             let bufnum = bufnr('%')
-            bprev
+            " there might be no previous buffer to go to, silence the error
+            silent! bprev
             call s:VifmJumpBack(mode, prev)
             exe 'silent! bdelete! ' . bufnum
         endif
