@@ -55,6 +55,9 @@ Set the variable `g:vifmFixWidth` to disallow resizing of the window.
 
 Set the variable `g:vifmBufList` to not list the buffer.
 
+To customize the ``vifmrc`` file to alter the vifm startup behaviour, use `:let $MYVIFMRC=/path/to/custom/vifmrc`.
+You can load the initial vifmrc file inside of ``/path/to/custom/rc/file`` using ``source /path/to/original/vifmrc``.
+
 Notes
 -----
 
