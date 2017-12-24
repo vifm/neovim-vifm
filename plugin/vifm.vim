@@ -38,6 +38,9 @@ function! s:vifmGetBufList()
     return s:vifmGetVar('g:vifmBufList', 0, 1)
 endfunction
 
+" TODO: these two focus variables have not been finalized, and so they are not
+" yet documented
+
 function! s:vifmGetAutoFocus()
     return s:vifmGetVar('g:vifmAutoFocus', 0, 1)
 endfunction
