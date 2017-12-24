@@ -28,35 +28,7 @@ Do not use this plugin at the same time as NERDTree or the official vifm plugin.
 Usage
 -----
 
-To launch vifm in a sidepane, run ``:Vifm {folder}``.
-In addition, any time a folder is opened using any command (such as ``:edit {folder}``), vifm will open.
-
-When a file is opened in vifm, it will be opened in vim.
-
-You can perform rudimentary navigation using ``hjkl``.
-Files can be opened with ``:edit`` or by pressing ``l`` while the cursor is over a file.
-When a non-folder file is opened in vifm, the buffer will exit and the plugin will attempt to open it in the window vifm was invoked from, or the closest window if it does not exist.
-To exit vifm without opening anything, enter ``:q`` or ``ZZ``.
-vifm has many, many other features, which you can read about in .vifm/vifm-help.txt
-The power of properly learning and configuring vifm, just as you would vim, cannot be overstated.
-
-Configuration
--------------
-
-Set the variable `g:vifmSplitWidth` to configure the width of the vifm side-menu.
-
-Set the variable `g:vifmLiveCwd` to 1 to allow vifm to alter the active directory as it navigates.
-
-Set the variable `g:vifmUseCurrent` to change vifm to the active directory on startup.
-
-Set the variable `g:vifmUseLcd` to use ``:lcd`` instead of ``:cd`` to change directory.
-
-Set the variable `g:vifmFixWidth` to disallow resizing of the window.
-
-Set the variable `g:vifmBufList` to not list the buffer.
-
-To customize the ``vifmrc`` file to alter the vifm startup behaviour, use ``:let $MYVIFMRC=/path/to/custom/vifmrc``.
-You can load the initial vifmrc file inside of ``/path/to/custom/rc/file`` using ``source /path/to/original/vifmrc``.
+See `:help neovim-vifm` for usage information.
 
 Notes
 -----

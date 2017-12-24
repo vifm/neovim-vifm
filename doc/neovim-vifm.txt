@@ -1,0 +1,68 @@
+neovim-vifm                                                       *neovim-vifm*
+
+==============================================================================
+Usage                                                       *neovim-vifm-usage*
+
+
+:Vifm <folder>                                                          *:Vifm*
+
+Launch vifm in a vertical split. If a folder is given, vifm will be opened
+starting in that folder.
+
+For basic navigation, use the regular "h", "j", "k", and "l" keys.
+
+To open a file back in neovim, select the file normally in vifm using "l" or
+":edit". Multiple files can be selected in neovim using "v", "V", or "t", as
+normal in vifm.
+
+To exit vifm use ":quit", ":q", or "ZZ", again as normal.
+
+See "$ man vifm" for more information on using vifm.
+
+:edit <folder>                                              *neovim-vifm-:edit*
+
+Opens the folder in neovim. This replaces vim's built-in netrw folder browser.
+Same as ":Vifm <folder>".
+
+==============================================================================
+Configuration                                       *neovim-vifm-configuration*
+
+See "man vifm" for information on configuring vifm.
+
+                                                             *g:vifmSplitWidth*
+Must be a number. Controls the width of the vifm window. Defaults to 40.
+
+                                                                *g:vifmLiveCwd*
+One of 1, 0. Controls whether neovim-vifm changes the active directory of
+neovim during navigation. Defaults to 0.
+
+                                                                 *g:vifmUseLcd*
+One of 1, 0. Controls whether vifm uses |:lcd| when |g:vifmLiveCwd| is on.
+Defaults to 0.
+
+                                                             *g:vifmUseCurrent*
+One of 1, 0. Controls whether neovim-vifm changes to the active directory on
+startup. Defaults to 1.
+
+                                                               *g:vifmFixWidth*
+One of 1, 0. Disallows resizing the vifm window. Defaults to 1.
+
+                                                                *g:vifmBufList*
+One of 1, 0. When set to 1, the buffer is not listed using |nobuflist|.
+Defaults to 1.
+
+==============================================================================
+Customizing Startup Behaviour               *neovim-vifm-startup-configuration*
+
+neovim-vifm does not yet support passing options to vifm.
+
+Instead, you can use a cusom configuration using the "$MYVIFMRC" environment
+variable.
+
+    :let $MYVIFMRC=/path/to/custom/vifmrc
+
+Within the file, you can use your original configuration or common
+configuration file using "source /path/to/original/vifmrc" then putting the
+desired custom behaviour afterwards.
+
+See "man vifm" for information on "source" and other commands provided by vifm.

@@ -1,0 +1,12 @@
+:Vifm	neovim-vifm.txt	/*:Vifm*
+g:vifmBufList	neovim-vifm.txt	/*g:vifmBufList*
+g:vifmFixWidth	neovim-vifm.txt	/*g:vifmFixWidth*
+g:vifmLiveCwd	neovim-vifm.txt	/*g:vifmLiveCwd*
+g:vifmSplitWidth	neovim-vifm.txt	/*g:vifmSplitWidth*
+g:vifmUseCurrent	neovim-vifm.txt	/*g:vifmUseCurrent*
+g:vifmUseLcd	neovim-vifm.txt	/*g:vifmUseLcd*
+neovim-vifm	neovim-vifm.txt	/*neovim-vifm*
+neovim-vifm-:edit	neovim-vifm.txt	/*neovim-vifm-:edit*
+neovim-vifm-configuration	neovim-vifm.txt	/*neovim-vifm-configuration*
+neovim-vifm-startup-configuration	neovim-vifm.txt	/*neovim-vifm-startup-configuration*
+neovim-vifm-usage	neovim-vifm.txt	/*neovim-vifm-usage*
