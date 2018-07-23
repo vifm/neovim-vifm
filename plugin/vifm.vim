@@ -51,9 +51,13 @@ endfunction
 
 function! s:VifmCwdCall(dirfile)
     let l:command = ['bash', '-c', 'while true; do cat ' . shellescape(a:dirfile) . '; done']
-    let l:argdict = {}
-    let l:callbacks = { 'on_stdout': function('s:VifmCwdStdoutCallback') }
-    let l:job = jobstart(l:command, extend(l:argdict, l:callbacks))
+    if has('nvim')
+        let l:callbacks = { 'on_stdout': function('s:NeovimVifmCwdStdoutCallback') }
+        let l:job = jobstart(l:command, l:callbacks)
+    else
+        let l:callbacks = { 'out_cb': function('s:VimVifmCwdStdoutCallback') }
+        let l:job = job_start(l:command, l:callbacks)
+    endif
     return l:job
 endfunction
 
@@ -69,7 +73,11 @@ function! s:VifmCall(dirname, mode, prev)
                 \ 'mode': a:mode,
                 \ 'prev': a:prev,
                 \ }
-    let l:callbacks = { 'on_exit': function('s:VifmExitCallback') }
+    if has('nvim')
+        let l:callbacks = { 'on_exit': function('s:NeovimVifmExitCallback') }
+    else
+        let l:callbacks = { 'exit_cb': function('s:VimVifmExitCallback') }
+    endif
     let l:vifmLiveCwd = s:vifmGetLiveCwd()
     if l:vifmLiveCwd == 1
         let l:dirfile = tempname()
@@ -82,7 +90,12 @@ function! s:VifmCall(dirname, mode, prev)
         call add(l:command, '--choose-dir')
         call add(l:command, l:dirfile)
     endif
-    call termopen(l:command, extend(l:argdict, l:callbacks))
+    if has('nvim')
+        call termopen(l:command, extend(l:argdict, l:callbacks))
+    else
+        call term_start(l:command, extend(l:callbacks, {'curwin': 1}))
+        let b:argdict = l:argdict
+    endif
     if a:mode ==# 'split' && s:vifmGetFixWidth()
         set winfixwidth
     endif
@@ -132,7 +145,7 @@ function! VifmToggle(dirname)
 endfunction
 
 function! VifmNoSplit(dirname)
-    if a:dirname ==# '' && isdirectory(a:dirname)
+    if a:dirname !=# '' && isdirectory(a:dirname)
         if !s:VifmInThisBuf()
             call s:VifmCallWithMode(a:dirname, 'auto')
         endif
@@ -144,35 +157,59 @@ function! s:VifmBufferCheck(bufnum)
     return matchstr(l:bufstr, '^term:\/\/.*:vifm$') !=# ''
 endfunction
 
-function! s:VifmCwdStdoutCallback(job_id, data, event)
+function! s:VifmCwdStdoutCallback(dir)
     if s:vifmGetUseLcd()
-        exec 'lcd ' . fnameescape(a:data[0])
+        exec 'lcd ' . fnameescape(a:dir)
     else
-        exec 'cd ' . fnameescape(a:data[0])
+        exec 'cd ' . fnameescape(a:dir)
     endif
 endfunction
 
-function! s:VifmExitCallback(job_id, data, event) dict
-    if exists('self.cwd_job')
-        call jobstop(l:self.cwd_job)
+function! s:NeovimVifmCwdStdoutCallback(job_id, data, event)
+    return s:VifmCwdStdoutCallback(a:data[0])
+endfunction
+
+function! s:VimVifmCwdStdoutCallback(channel, data)
+    return s:VifmCwdStdoutCallback(a:data)
+endfunction
+
+function! s:VifmExitCallback(argdict)
+    if exists('a:argdict.cwd_job')
+        if has('nvim')
+            call jobstop(a:argdict.cwd_job)
+        else
+            call job_stop(a:argdict.cwd_job)
+        endif
     endif
-    if !filereadable(l:self.listfile)
+    if !filereadable(a:argdict.listfile)
         return
     endif
-    let l:names = readfile(l:self.listfile)
+    let l:names = readfile(a:argdict.listfile)
     if empty(l:names)
         return
     endif
-    if l:self.mode ==# 'split'
-        call VifmClose(l:self.mode, l:self.prev)
+    if a:argdict.mode ==# 'split'
+        call VifmClose(a:argdict.mode, a:argdict.prev)
     else
-        call VifmClose(l:self.mode, l:self.prev)
+        call VifmClose(a:argdict.mode, a:argdict.prev)
     endif
     exec 'edit ' . fnameescape(l:names[0])
     for l:name in l:names[1:]
         exec 'tabedit ' . fnameescape(l:name)
         filetype detect
     endfor
+endfunction
+
+function! s:NeovimVifmExitCallback(job_id, data, event) dict
+    return s:VifmExitCallback(l:self)
+endfunction
+
+function! s:VimVifmExitCallback(job, exit_status)
+    let l:argdict = b:argdict
+    if l:argdict.mode ==# 'split'
+        close
+    endif
+    return s:VifmExitCallback(l:argdict)
 endfunction
 
 function! s:VifmBufNum()

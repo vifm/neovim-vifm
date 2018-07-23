@@ -1,12 +1,12 @@
 neovim-vifm
 ==========
 
-Integration between `vifm <https://github.com/vifm/vifm>`_ (the vi file manager) and neovim.
+Integration between `vifm <https://github.com/vifm/vifm>`_ (the vi file manager) and neovim/vim 8.
 
 Requirements
 ------------
 
-neovim
+neovim or vim >= 8
 
 vifm >= 0.8 beta
 
@@ -15,11 +15,11 @@ About the Plugin
 
 `vifm <http://vifm.info/>`_ is a file manager with vim key bindings.
 While ranger is a file manager that is vim-like in philosophy, vifm seeks to emulate vim as completely as possible in a file manager.
-It feels extremely natural in neovim.
+It feels extremely natural in vim.
 
 This plugin is similar to `NERDTree <https://github.com/scrooloose/nerdtree>`_. 
 It overrides the default file browser (netrw), so if you :edit a directory a vifm will be opened. 
-When you open a file in vifm, it will be opened back in neovim.
+When you open a file in vifm, it will be opened back in vim.
 It also replaces netrw, the default vim file manager.
 You can also select multiple files and open them all at once (use ``v``/``t`` to select multiple files in vifm).
 

@@ -11,8 +11,8 @@ starting in that folder.
 
 For basic navigation, use the regular "h", "j", "k", and "l" keys.
 
-To open a file back in neovim, select the file normally in vifm using "l" or
-":edit". Multiple files can be selected in neovim using "v", "V", or "t", as
+To open a file back in vim, select the file normally in vifm using "l" or
+":edit". Multiple files can be selected in vim using "v", "V", or "t", as
 normal in vifm.
 
 To exit vifm use ":quit", ":q", or "ZZ", again as normal.
@@ -21,7 +21,7 @@ See "$ man vifm" for more information on using vifm.
 
 :edit <folder>                                              *neovim-vifm-:edit*
 
-Opens the folder in neovim. This replaces vim's built-in netrw folder browser.
+Opens the folder in vim. This replaces vim's built-in netrw folder browser.
 Same as ":Vifm <folder>".
 
 ==============================================================================
@@ -34,7 +34,7 @@ Must be a number. Controls the width of the vifm window. Defaults to 40.
 
                                                                 *g:vifmLiveCwd*
 One of 1, 0. Controls whether neovim-vifm changes the active directory of
-neovim during navigation. Defaults to 0.
+vim during navigation. Defaults to 0.
 
                                                                  *g:vifmUseLcd*
 One of 1, 0. Controls whether vifm uses |:lcd| when |g:vifmLiveCwd| is on.
