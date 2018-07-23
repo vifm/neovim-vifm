@@ -50,46 +50,46 @@ function! s:vifmGetStartInsert()
 endfunction
 
 function! s:VifmCwdCall(dirfile)
-    let command = ['bash', '-c', 'while true; do cat ' . shellescape(a:dirfile) . '; done']
-    let argdict = {}
-    let callbacks = { 'on_stdout': function('s:VifmCwdStdoutCallback') }
-    let job = jobstart(command, extend(argdict, callbacks))
-    return job
+    let l:command = ['bash', '-c', 'while true; do cat ' . shellescape(a:dirfile) . '; done']
+    let l:argdict = {}
+    let l:callbacks = { 'on_stdout': function('s:VifmCwdStdoutCallback') }
+    let l:job = jobstart(l:command, extend(l:argdict, l:callbacks))
+    return l:job
 endfunction
 
 function! s:VifmCall(dirname, mode, prev)
-    let listfile = tempname()
-    let command = ['vifm', '--choose-files', listfile ]
-    let vifmUseCurrent = s:vifmGetUseCurrent()
-    if vifmUseCurrent
-        let command = command + [a:dirname]
+    let l:listfile = tempname()
+    let l:command = ['vifm', '--choose-files', l:listfile ]
+    let l:vifmUseCurrent = s:vifmGetUseCurrent()
+    if l:vifmUseCurrent
+        let l:command = l:command + [a:dirname]
     endif
-    let argdict = {
-                \ 'listfile': listfile,
+    let l:argdict = {
+                \ 'listfile': l:listfile,
                 \ 'mode': a:mode,
                 \ 'prev': a:prev,
                 \ }
-    let callbacks = { 'on_exit': function('s:VifmExitCallback') }
-    let vifmLiveCwd = s:vifmGetLiveCwd()
-    if vifmLiveCwd == 1
-        let dirfile = tempname()
-        silent exec '!mkfifo ' . dirfile
-        let cwd_job = s:VifmCwdCall(dirfile)
-        let argdict.dirfile = dirfile
-        let argdict.cwd_job = cwd_job
-        call add(command, '-c')
-        call add(command, 'autocmd DirEnter * !pwd >> ' . dirfile)
-        call add(command, '--choose-dir')
-        call add(command, dirfile)
+    let l:callbacks = { 'on_exit': function('s:VifmExitCallback') }
+    let l:vifmLiveCwd = s:vifmGetLiveCwd()
+    if l:vifmLiveCwd == 1
+        let l:dirfile = tempname()
+        silent exec '!mkfifo ' . l:dirfile
+        let l:cwd_job = s:VifmCwdCall(l:dirfile)
+        let l:argdict.dirfile = l:dirfile
+        let l:argdict.cwd_job = l:cwd_job
+        call add(l:command, '-c')
+        call add(l:command, 'autocmd DirEnter * !pwd >> ' . l:dirfile)
+        call add(l:command, '--choose-dir')
+        call add(l:command, l:dirfile)
     endif
-    call termopen(command, extend(argdict, callbacks))
-    if a:mode == 'split' && s:vifmGetFixWidth()
-        set wfw
+    call termopen(l:command, extend(l:argdict, l:callbacks))
+    if a:mode ==# 'split' && s:vifmGetFixWidth()
+        set winfixwidth
     endif
     if s:vifmGetBufList()
         set nobuflisted
     endif
-    if s:vifmGetAutoFocus() || a:mode != 'split'
+    if s:vifmGetAutoFocus() || a:mode !=# 'split'
         if s:vifmGetStartInsert()
             startinsert
         endif
@@ -99,25 +99,25 @@ function! s:VifmCall(dirname, mode, prev)
 endfunction
 
 function! s:VifmCallWithMode(dirname, mode)
-    if a:mode == 'split'
-        let prev = winnr()
+    if a:mode ==# 'split'
+        let l:prev = winnr()
     else
-        let prev = bufnr('%')
+        let l:prev = bufnr('%')
     endif
-    let vifmSplitWidth = s:vifmGetSplitWidth()
-    if a:mode == 'split'
-        exe vifmSplitWidth . 'vnew'
+    let l:vifmSplitWidth = s:vifmGetSplitWidth()
+    if a:mode ==# 'split'
+        exe l:vifmSplitWidth . 'vnew'
     endif
-    call s:VifmCall(a:dirname, a:mode, prev)
+    call s:VifmCall(a:dirname, a:mode, l:prev)
 endfunction
 
 function! Vifm(dirname)
-    if a:dirname != '' && isdirectory(a:dirname)
-        let winnum = s:VifmWinNum()
-        if winnum == 0
+    if a:dirname !=# '' && isdirectory(a:dirname)
+        let l:winnum = s:VifmWinNum()
+        if l:winnum == 0
             call s:VifmCallWithMode(a:dirname, 'split')
         else
-            exe winnum . 'wincmd w'
+            exe l:winnum . 'wincmd w'
             startinsert
         endif
     endif
@@ -132,7 +132,7 @@ function! VifmToggle(dirname)
 endfunction
 
 function! VifmNoSplit(dirname)
-    if a:dirname != '' && isdirectory(a:dirname)
+    if a:dirname ==# '' && isdirectory(a:dirname)
         if !s:VifmInThisBuf()
             call s:VifmCallWithMode(a:dirname, 'auto')
         endif
@@ -140,8 +140,8 @@ function! VifmNoSplit(dirname)
 endfunction
 
 function! s:VifmBufferCheck(bufnum)
-    let bufstr = bufname(a:bufnum)
-    return matchstr(bufstr, '^term:\/\/.*:vifm$') != ''
+    let l:bufstr = bufname(a:bufnum)
+    return matchstr(l:bufstr, '^term:\/\/.*:vifm$') !=# ''
 endfunction
 
 function! s:VifmCwdStdoutCallback(job_id, data, event)
@@ -154,43 +154,43 @@ endfunction
 
 function! s:VifmExitCallback(job_id, data, event) dict
     if exists('self.cwd_job')
-        call jobstop(self.cwd_job)
+        call jobstop(l:self.cwd_job)
     endif
-    if !filereadable(self.listfile)
+    if !filereadable(l:self.listfile)
         return
     endif
-    let names = readfile(self.listfile)
-    if empty(names)
+    let l:names = readfile(l:self.listfile)
+    if empty(l:names)
         return
     endif
-    if self.mode == 'split'
-        call VifmClose(self.mode, self.prev)
+    if l:self.mode ==# 'split'
+        call VifmClose(l:self.mode, l:self.prev)
     else
-        call VifmClose(self.mode, self.prev)
+        call VifmClose(l:self.mode, l:self.prev)
     endif
-    exec 'edit ' . fnameescape(names[0])
-    for name in names[1:]
-        exec 'tabedit ' . fnameescape(name)
+    exec 'edit ' . fnameescape(l:names[0])
+    for l:name in l:names[1:]
+        exec 'tabedit ' . fnameescape(l:name)
         filetype detect
     endfor
 endfunction
 
 function! s:VifmBufNum()
-    let bufnums = tabpagebuflist()
-    for bufnum in bufnums
-        if s:VifmBufferCheck(bufnum)
-            return bufnum
+    let l:bufnums = tabpagebuflist()
+    for l:bufnum in l:bufnums
+        if s:VifmBufferCheck(l:bufnum)
+            return l:bufnum
         endif
     endfor
     return -1
 endfunction
 
 function! s:VifmWinNum()
-    let bufnum = s:VifmBufNum()
-    if bufnum == -1
+    let l:bufnum = s:VifmBufNum()
+    if l:bufnum == -1
         return 0
     else
-        return bufwinnr(bufnum)
+        return bufwinnr(l:bufnum)
     endif
 endfunction
 
@@ -202,7 +202,7 @@ function! s:VifmJumpBack(mode, prev)
     if a:prev == -1
         return 0
     endif
-    if a:mode == 'split'
+    if a:mode ==# 'split'
         silent! exe a:prev . 'wincmd w'
     else
         silent! buffer a:prev
@@ -212,46 +212,48 @@ endfunction
 
 function! VifmClose(...)
     if a:0 > 0
-        let mode = a:1
+        let l:mode = a:1
     else
-        let mode = 'split'
+        let l:mode = 'split'
     endif
     if a:0 > 1
-        let prev = a:2
+        let l:prev = a:2
     else
-        let prev = -1
+        let l:prev = -1
     endif
     if s:VifmInThisBuf()
-        if mode == 'split'
+        if l:mode ==# 'split'
             bdelete!
-            call s:VifmJumpBack(mode, prev)
+            call s:VifmJumpBack(l:mode, l:prev)
         else
-            let bufnum = bufnr('%')
+            let l:bufnum = bufnr('%')
             " there might be no previous buffer to go to, silence the error
             silent! bprev
-            call s:VifmJumpBack(mode, prev)
-            exe 'silent! bdelete! ' . bufnum
+            call s:VifmJumpBack(l:mode, l:prev)
+            exe 'silent! bdelete! ' . l:bufnum
         endif
         return
     else
-        let bufnum = s:VifmBufNum()
-        if bufnum == -1
+        let l:bufnum = s:VifmBufNum()
+        if l:bufnum == -1
             return
         else
-            exe 'bdelete! ' . bufnum
+            exe 'bdelete! ' . l:bufnum
         endif
     endif
 endfunction
 
 function! s:VifmAuto(dirname)
-    if a:dirname != '' && isdirectory(a:dirname)
+    if a:dirname !=# '' && isdirectory(a:dirname)
         " bdelete!
         call VifmNoSplit(a:dirname)
     endif
 endfunction
 
 let g:loaded_netrwPlugin = 'disable'
-au BufEnter * silent call s:VifmAuto(expand('<amatch>'))
+augroup neovimvifm
+    au BufEnter * silent call s:VifmAuto(expand('<amatch>'))
+augroup END
 
 command! -complete=file -nargs=1 Vifm call Vifm(<f-args>)
 command! -nargs=0 VifmClose call VifmClose()
