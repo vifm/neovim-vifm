@@ -1,6 +1,8 @@
 neovim-vifm
 ==========
 
+**Deprecated: this repository has been merged into https://github.com/vifm/vifm.vim**
+
 Integration between `vifm <https://github.com/vifm/vifm>`_ (the vi file manager) and neovim/vim 8.
 
 Requirements
